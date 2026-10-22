@@ -1,0 +1,14 @@
+{
+  // Used by Vercel to compile api/index.ts (and the backend/shared code it imports).
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["api", "backend/src", "shared"]
+}

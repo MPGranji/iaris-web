@@ -1,0 +1,29 @@
+{
+  "name": "iaris-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IARIS Cyber & Data – website (React + Vite frontend, Express + Prisma backend) deployable on Vercel",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:web": "npm run dev -w frontend",
+    "dev:api": "npm run dev -w backend",
+    "build": "npm run db:generate && npm run build -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "db:generate": "npm run db:generate -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:deploy": "npm run db:deploy -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:studio": "npm run db:studio -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "typescript": "5.9.3"
+  }
+}

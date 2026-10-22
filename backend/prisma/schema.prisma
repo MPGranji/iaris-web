@@ -1,0 +1,226 @@
+// IARIS Cyber & Data – database schema (PostgreSQL)
+// See docs/DATABASE.md for the ERD and the design rationale.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"] // rhel-openssl-3.0.x = Vercel runtime
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+/// Nhóm dịch vụ IARIS Media
+enum MediaGroup {
+  M1 // Kênh đồng sở hữu
+  M2 // Dịch vụ truyền thông cho doanh nghiệp
+  M3 // Sự kiện & tài trợ
+}
+
+/// Bộ lọc tab ở mục Sự kiện
+enum EventStatus {
+  UPCOMING // Sắp diễn ra
+  WEBINAR // Webinar
+  PAST // Đã diễn ra
+}
+
+/// Loại sự kiện – quyết định màu pill đầu tiên
+enum EventKind {
+  EVENT // Diễn đàn, roundtable
+  COMPETITION // Cuộc thi
+  WEBINAR
+  PAST
+}
+
+/// Các lựa chọn "Quan tâm" trong form tư vấn
+enum Interest {
+  FOUNDATION // Khóa nền tảng
+  SECTOR_PROGRAM // Chương trình ngành
+  INHOUSE // In-house / diễn tập
+  ELEARNING // E-learning
+  MEDIA // IARIS Media
+  EVENT_SPONSOR // Tài trợ sự kiện
+}
+
+/// Trạng thái xử lý yêu cầu tư vấn (pipeline sales)
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+  SPAM
+}
+
+// ──────────────────────────── Content ────────────────────────────
+
+/// Các đạo luật mới hiển thị ở hero ("4 đạo luật · 12 tháng")
+model Law {
+  id            String   @id @default(cuid())
+  name          String
+  detail        String
+  effectiveDate DateTime @db.Date
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+/// Khóa học. B1–B6 là 6 khóa nền tảng liên ngành (isFoundation = true)
+model Course {
+  id           String         @id @default(cuid())
+  code         String         @unique // "B1".."B6"
+  title        String
+  tagline      String // câu trích dẫn màu đồng
+  duration     String // "1 ngày", "6 buổi · 60% thực hành"
+  audience     String // "Dành cho"
+  outcomes     String // "Bạn nhận được"
+  isFoundation Boolean        @default(true)
+  sortOrder    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  lessons      Lesson[]
+  questions    QuizQuestion[]
+  attempts     QuizAttempt[]
+
+  @@index([isFoundation, sortOrder])
+}
+
+/// Nhóm ngành theo mức độ cần học sâu (Nhóm 1/2/3)
+model SectorTier {
+  id         String          @id @default(cuid())
+  level      Int             @unique // 1..3
+  shortLabel String // "Nhóm 1"
+  label      String // "Nhóm 1 · Hạ tầng trọng yếu"
+  depth      Int // số vạch sáng trên meter (1..3)
+  introLead  String // phần in đậm của đoạn giới thiệu
+  introBody  String
+  programs   SectorProgram[]
+}
+
+/// Chương trình chuyên ngành – mỗi dòng của bảng, đồng thời là danh sách "Ngành" trong form
+model SectorProgram {
+  id           String     @id @default(cuid())
+  tierId       String
+  tier         SectorTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  name         String     @unique
+  audience     String
+  focus        String
+  standards    String // "FS-ISAC · DORA · PCI DSS"
+  launchPeriod String // "Q4/2026" | "H1/2027" | "H2/2027"
+  sortOrder    Int        @default(0)
+  leads        Lead[]
+
+  @@index([tierId, sortOrder])
+}
+
+/// 15 dịch vụ / kênh IARIS Media
+model MediaService {
+  id        String     @id @default(cuid())
+  group     MediaGroup
+  name      String
+  tagline   String
+  benefits  String[]
+  meta      String
+  featured  Boolean    @default(false) // thẻ nền xanh đậm
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([group, sortOrder])
+}
+
+/// Sự kiện & webinar
+model Event {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  status      EventStatus
+  kind        EventKind
+  dateLabel   String // chữ lớn: "06–07", "72h"
+  periodLabel String // dòng mono nhỏ: "Tháng 11 · 2026"
+  startsAt    DateTime? // ngày thực (nếu đã chốt) – dùng để sắp xếp/tự chuyển PAST
+  title       String
+  summary     String
+  tags        String[]
+  ctaLabel    String
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  leads       Lead[]
+
+  @@index([status, sortOrder])
+}
+
+// ─────────────────────────── E-learning ──────────────────────────
+
+/// Bài học của một khóa (B6: 6 bài × 15 phút)
+model Lesson {
+  id          String @id @default(cuid())
+  courseId    String
+  course      Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  position    Int
+  title       String
+  summary     String
+  durationMin Int    @default(15)
+
+  @@unique([courseId, position])
+}
+
+/// Câu hỏi tình huống của bài kiểm tra
+model QuizQuestion {
+  id           String   @id @default(cuid())
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  position     Int
+  scenario     String
+  message      String // nội dung email/SMS/cuộc gọi minh họa
+  options      String[]
+  correctIndex Int
+  explanation  String
+
+  @@unique([courseId, position])
+}
+
+/// Kết quả mỗi lượt "Thử nhanh" – dùng để thống kê
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  answers   Int[] // chỉ số đáp án đã chọn theo thứ tự câu hỏi
+  score     Int
+  total     Int
+  createdAt DateTime @default(now())
+
+  @@index([courseId, createdAt])
+}
+
+// ───────────────────────────── Sales ─────────────────────────────
+
+/// Yêu cầu tư vấn từ form "Đăng ký và tư vấn"
+model Lead {
+  id              String         @id @default(cuid())
+  fullName        String
+  jobTitle        String?
+  organization    String
+  email           String
+  phone           String?
+  sectorProgramId String?
+  sectorProgram   SectorProgram? @relation(fields: [sectorProgramId], references: [id], onDelete: SetNull)
+  sectorLabel     String? // snapshot tên ngành tại thời điểm gửi ("Ngành khác" nếu không có trong danh sách)
+  interests       Interest[]
+  message         String?
+  eventId         String?
+  event           Event?         @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  status          LeadStatus     @default(NEW)
+  note            String? // ghi chú nội bộ của sales
+  userAgent       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
