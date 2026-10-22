@@ -29,9 +29,9 @@ export default function App() {
         <About />
         <Courses courses={content.courses} tiers={content.tiers} />
         <Media media={content.media} />
-        <Elearning lessons={content.lessons} quiz={content.quiz} />
+        <Elearning lessons={content.lessons} quiz={content.quiz} persist={content.source === 'database'} />
         <Events events={content.events} onRegister={registerForEvent} />
-        <Contact tiers={content.tiers} prefill={prefill} />
+        <Contact tiers={content.tiers} prefill={prefill} persist={content.source === 'database'} />
       </main>
       <Footer />
     </>

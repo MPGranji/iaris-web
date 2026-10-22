@@ -14,7 +14,11 @@ type Fields = typeof EMPTY;
 
 const warnStyle = { background: 'var(--copper-soft)', borderColor: 'var(--copper)' };
 
-export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: ContactPrefill | null }) {
+export function Contact({ tiers, prefill, persist = false }: {
+  tiers: SectorTier[];
+  prefill: ContactPrefill | null;
+  persist?: boolean;
+}) {
   const [f, setF] = useState<Fields>(EMPTY);
   const [interests, setInterests] = useState<Set<InterestCode>>(new Set());
   const [eventSlug, setEventSlug] = useState('');
@@ -53,6 +57,7 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (sending) return;
     const required = ['fullName', 'organization', 'email'] as const;
     const miss = required.filter((k) => !f[k].trim());
     if (miss.length) {
@@ -75,6 +80,27 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
     }
 
     const name = f.fullName;
+    const reset = () => {
+      setF((x) => ({ ...EMPTY, sector: x.sector }));
+      setInterests(new Set());
+      setEventSlug('');
+    };
+
+    // Match the original artifact: an immediate inline demo notice, then clear
+    // inputs and checkboxes while retaining the selected sector. No API needed.
+    if (!persist) {
+      setOut(
+        <div className="ok">
+          <span style={{ color: 'var(--signal)' }}>●</span>
+          <span>
+            Cảm ơn {name}. Biểu mẫu đang trong giai đoạn thử nghiệm nên yêu cầu chưa được gửi đi. Vui lòng liên hệ hotline hoặc email của IARIS để được tư vấn.
+          </span>
+        </div>,
+      );
+      reset();
+      return;
+    }
+
     const payload: LeadInput = {
       fullName: f.fullName,
       jobTitle: f.jobTitle,
@@ -88,6 +114,7 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
       website: f.website,
     };
 
+    setOut(null);
     setSending(true);
     let stored = false;
     try {
@@ -103,13 +130,19 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
         setSending(false);
         return;
       }
-      // Network/server error → fall through to the "not sent" notice below
+      setOut(
+        <div className="ok" style={warnStyle}>
+          Chưa gửi được yêu cầu. Vui lòng thử lại sau. Nội dung bạn đã nhập được giữ nguyên.
+        </div>,
+      );
+      setSending(false);
+      return;
     }
     setSending(false);
 
     setOut(
-      <div className="ok">
-        <span style={{ color: 'var(--signal)' }}>●</span>
+      <div className="ok" style={stored ? undefined : warnStyle}>
+        <span style={{ color: stored ? 'var(--signal)' : 'var(--copper)' }}>●</span>
         <span>
           {stored
             ? `Cảm ơn ${name}. IARIS đã nhận yêu cầu và sẽ liên hệ lại với bạn trong 1–2 ngày làm việc.`
@@ -117,10 +150,9 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
         </span>
       </div>,
     );
-    // Same as the original: clear inputs, textarea and checkboxes (the sector dropdown is kept)
-    setF((x) => ({ ...EMPTY, sector: x.sector }));
-    setInterests(new Set());
-    setEventSlug('');
+    // Only clear a request after the API confirms it was saved.
+    if (!stored) return;
+    reset();
   };
 
   return (
@@ -152,7 +184,7 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
           </dl>
         </div>
 
-        <form className="card" id="leadForm" noValidate onSubmit={onSubmit}>
+        <form className="card" id="leadForm" noValidate onSubmit={onSubmit} aria-busy={sending}>
           <label>
             Họ và tên
             <input id="f-name" name="name" required autoComplete="name" ref={refs.fullName} value={f.fullName} onChange={set('fullName')} />
@@ -235,7 +267,7 @@ export function Contact({ tiers, prefill }: { tiers: SectorTier[]; prefill: Cont
               onChange={set('message')}
             />
           </label>
-          <div className="full" id="formOut">
+          <div className="full" id="formOut" role="status" aria-live="polite" aria-atomic="true">
             {out}
           </div>
           <div

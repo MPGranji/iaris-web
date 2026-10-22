@@ -98,7 +98,7 @@ function Portal({ lessons }: { lessons: Lesson[] }) {
 }
 
 /* ───────────── Quick scam-awareness quiz ───────────── */
-function Quiz({ quiz }: { quiz: QuizQuestion[] }) {
+function Quiz({ quiz, persist }: { quiz: QuizQuestion[]; persist: boolean }) {
   const [qi, setQi] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
@@ -121,6 +121,7 @@ function Quiz({ quiz }: { quiz: QuizQuestion[] }) {
       return;
     }
     setFinished(true);
+    if (!persist) return;
     // Fire-and-forget: the server re-scores and records the attempt for analytics.
     api
       .post<QuizAttemptResult>('/quiz-attempts', { courseCode: ELEARNING_COURSE_CODE, answers })
@@ -210,7 +211,7 @@ function Quiz({ quiz }: { quiz: QuizQuestion[] }) {
   );
 }
 
-export function Elearning({ lessons, quiz }: { lessons: Lesson[]; quiz: QuizQuestion[] }) {
+export function Elearning({ lessons, quiz, persist = false }: { lessons: Lesson[]; quiz: QuizQuestion[]; persist?: boolean }) {
   return (
     <section className="block alt" id="elearning">
       <div className="wrap">
@@ -221,7 +222,7 @@ export function Elearning({ lessons, quiz }: { lessons: Lesson[]; quiz: QuizQues
 
         <div className="el-grid">
           <Portal lessons={lessons} />
-          <Quiz quiz={quiz} />
+          <Quiz quiz={quiz} persist={persist} />
         </div>
 
         <div className="el-list">

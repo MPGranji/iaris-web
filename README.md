@@ -53,8 +53,9 @@ Trình duyệt ──► React (render ngay bằng shared/content.ts)
 
 - Trang hiển thị tức thì với nội dung đóng gói sẵn, rồi thay bằng dữ liệu từ API → không có màn hình loading,
   giao diện y hệt bản gốc kể cả khi API/DB gặp sự cố.
-- Không cấu hình `DATABASE_URL` thì API vẫn chạy bằng nội dung tĩnh (form trả về `stored: false`
-  và hiển thị thông báo "biểu mẫu đang thử nghiệm" như bản gốc).
+- Không cấu hình `DATABASE_URL` thì API vẫn chạy bằng nội dung tĩnh. Form demo phản hồi ngay như bản gốc:
+  hiện thông báo "biểu mẫu đang thử nghiệm", xóa input, nội dung và checkbox, giữ ngành đã chọn; không gửi yêu cầu lên API.
+  Khi nội dung được tải từ database, form chuyển sang lưu thật qua API.
 
 ## Hiệu ứng được giữ nguyên từ bản gốc
 
@@ -69,7 +70,7 @@ Trình duyệt ──► React (render ngay bằng shared/content.ts)
 | Cổng học viên: chọn bài, đánh dấu hoàn thành, thanh tiến độ chạy (`transition: width .5s`) | `sections/Elearning.tsx` |
 | Quiz 3 tình huống: đúng/sai, giải thích, kết quả, làm lại | `sections/Elearning.tsx` |
 | Bấm CTA sự kiện → điền sẵn "Đăng ký: …" vào form | `App.tsx` → `sections/Contact.tsx` |
-| Light/Dark theo `prefers-color-scheme`, tôn trọng `prefers-reduced-motion` | `global.css` |
+| Nền tối mặc định giống bản mẫu Claude; hỗ trợ token nền sáng, tôn trọng `prefers-reduced-motion` | `index.html`, `global.css` |
 
 ## API
 
