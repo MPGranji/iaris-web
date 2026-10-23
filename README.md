@@ -14,7 +14,7 @@ Database Neon Free **iaris-main-db** ở Singapore tách biệt database sandbox
 ## Chức năng
 
 - Admin quản lý nội dung bản nháp, xuất bản website, tài khoản và quyền hạn.
-- Form tư vấn lưu vào database; thông báo chủ và xác nhận khách được gửi qua email, có lịch sử gửi.
+- Form tư vấn lưu vào database; thông báo gửi tới email chủ website và có lịch sử gửi; không tự gửi email cho khách.
 - Chuông admin kiểm tra yêu cầu mới mỗi 10 giây khi tab đang hiển thị và khi quay lại tab.
 - Bản demo bật DEMO_ADMIN_LOGIN=true: đăng nhập **admin / admin**, có gợi ý ở màn hình đăng nhập.
   Website có link mở admin ngay dưới nút gửi form; sau khi gửi thành công còn có link mở đúng hồ sơ.

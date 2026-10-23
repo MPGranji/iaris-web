@@ -6,7 +6,7 @@ import { HttpError } from "../lib/http-error";
 import type { LeadResult } from "../../../shared/types";
 import type { LeadInputParsed } from "../validators/lead.schema";
 import {
-  customerEmailStatus,
+  ownerEmailStatus,
   deliverLeadEmails,
   notificationDrafts,
 } from "./mail.service";
@@ -57,7 +57,7 @@ export async function createLead(
   if (!lead)
     try {
       lead = await prisma.$transaction(async (tx) => {
-        // Serialize submissions to the same email so the receipt cannot be spammed in parallel.
+        // Serialize submissions to the same email to limit duplicate owner notifications in parallel.
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.email}))`;
         if (input.submissionKey) {
           const duplicate = await tx.lead.findUnique({
@@ -120,7 +120,7 @@ export async function createLead(
     ...(env.demoAdminLogin ? {
       adminUrl: `${env.adminAppUrl.replace(/\/$/, "")}/#/leads?id=${encodeURIComponent(lead.id)}`,
     } : {}),
-    email: await customerEmailStatus(lead.id).catch(() => "pending" as const),
+    email: await ownerEmailStatus(lead.id).catch(() => "pending" as const),
   };
 }
 

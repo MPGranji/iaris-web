@@ -497,7 +497,7 @@ test("public consultation keeps fields and the same submission key after a faile
   assert.equal(firstKey, secondKey);
   assert.ok(firstKey);
   assert.equal(element<HTMLInputElement>("#f-name").value, "");
-  assert.ok(document.body.textContent?.includes("chưa gửi ra ngoài"));
+  assert.ok(document.body.textContent?.includes("Đội ngũ phụ trách sẽ liên hệ"));
   assert.equal(element<HTMLAnchorElement>(".form-admin-link").href,
     "https://admin.example.com/#/leads?id=lead-from-form");
 });

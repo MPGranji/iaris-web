@@ -133,6 +133,7 @@ export interface LeadResult {
   id: string | null;
   /** false when the API runs without a database (request not stored) */
   stored: boolean;
+  /** Delivery status of the notification to the website owner. */
   email?: "preview" | "sent" | "pending";
   /** Link to inspect a saved request, only exposed in the opted-in public demo. */
   adminUrl?: string;

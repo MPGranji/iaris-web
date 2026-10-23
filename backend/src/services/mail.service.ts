@@ -90,7 +90,6 @@ export function notificationDrafts(
       .join(", ") || "Chưa chọn";
   const summary = `Mã yêu cầu: ${lead.id}\nHọ và tên: ${lead.fullName}\nDoanh nghiệp: ${lead.organization}\nChức vụ: ${lead.jobTitle || "Chưa cung cấp"}\nEmail: ${lead.email}\nĐiện thoại: ${lead.phone || "Chưa cung cấp"}\nNgành: ${lead.sectorLabel || "Chưa chọn"}\nQuan tâm: ${interests}\n\nNội dung khách gửi:\n${lead.message || "Chưa để lại lời nhắn."}`;
   const ownerBody = `Có yêu cầu tư vấn mới từ website IARIS.\n\n${summary}\n\nMở hồ sơ trong admin:\n${config.adminUrl}/#/leads?id=${encodeURIComponent(lead.id)}\n\nBấm Trả lời email này để liên hệ trực tiếp với khách hàng.`;
-  const customerBody = `Chào ${lead.fullName},\n\nIARIS đã tiếp nhận yêu cầu tư vấn của bạn. Đội ngũ phụ trách sẽ liên hệ qua email hoặc số điện thoại bạn đã cung cấp.\n\n${summary}\n\nBạn có thể trả lời email này để bổ sung thông tin hoặc tiếp tục trao đổi với IARIS.\n\nTrân trọng,\nIARIS Cyber & Data`;
   return [
     {
       leadId: lead.id,
@@ -102,17 +101,6 @@ export function notificationDrafts(
       subject: `[IARIS] Yêu cầu tư vấn mới · ${lead.id}`,
       text: ownerBody,
       html: htmlMessage("Yêu cầu tư vấn mới", ownerBody),
-    },
-    {
-      leadId: lead.id,
-      kind: "CUSTOMER_RECEIPT",
-      mode: config.mode,
-      recipient: lead.email,
-      sender: config.sender,
-      replyTo: config.replyTo,
-      subject: `[IARIS] Đã tiếp nhận yêu cầu tư vấn · ${lead.id}`,
-      text: customerBody,
-      html: htmlMessage("IARIS đã nhận yêu cầu của bạn", customerBody),
     },
   ];
 }
@@ -170,6 +158,7 @@ export async function deliverEmail(
     config = dependencies.config ?? mailConfiguration();
   const lease = new Date();
   const row = await db.leadEmail.findUniqueOrThrow({ where: { id } });
+  if (row.kind !== "OWNER_NOTICE") return; // Customer receipts are no longer sent.
   if (row.mode !== config.mode) return; // Changing .env must not release captured preview mail.
   const claimed = await db.leadEmail.updateMany({
     where: {
@@ -191,9 +180,8 @@ export async function deliverEmail(
     },
   });
   if (!claimed.count) return;
-  const recipient = row.kind === "OWNER_NOTICE" ? config.owner : row.recipient;
-  const replyTo =
-    row.kind === "CUSTOMER_RECEIPT" ? config.replyTo : row.replyTo;
+  const recipient = config.owner;
+  const replyTo = row.replyTo;
   try {
     if (config.error) throw new Error("MAIL_CONFIGURATION");
     const messageId =
@@ -250,16 +238,16 @@ export async function deliverEmail(
 }
 export async function deliverLeadEmails(leadId: string) {
   const rows = await database().leadEmail.findMany({
-    where: { leadId },
+    where: { leadId, kind: "OWNER_NOTICE" },
     select: { id: true },
   });
   await Promise.all(rows.map((row) => deliverEmail(row.id)));
 }
-export async function customerEmailStatus(
+export async function ownerEmailStatus(
   leadId: string,
 ): Promise<"preview" | "sent" | "pending"> {
   const row = await database().leadEmail.findUnique({
-    where: { leadId_kind: { leadId, kind: "CUSTOMER_RECEIPT" } },
+    where: { leadId_kind: { leadId, kind: "OWNER_NOTICE" } },
     select: { status: true },
   });
   return row?.status === "PREVIEW"
@@ -304,6 +292,8 @@ export async function mailHistory(leadId: string): Promise<LeadMailHistory> {
 export async function retryEmail(leadId: string, id: string, actorId: string) {
   const row = await database().leadEmail.findFirst({ where: { id, leadId } });
   if (!row) throw new HttpError(404, "Không tìm thấy email.");
+  if (row.kind !== "OWNER_NOTICE")
+    throw new HttpError(409, "Chỉ gửi thông báo cho chủ website; không gửi email xác nhận cho khách.");
   if (row.status === "SENT" || row.status === "PREVIEW")
     throw new HttpError(
       409,

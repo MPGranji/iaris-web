@@ -451,7 +451,7 @@ function LeadEmailPanel({ lead }: { lead: DemoRecord }) {
           {!history.items.length && (
             <p className="helper-text">
               Hồ sơ cũ chưa có email tự động. Yêu cầu mới sẽ tạo thông báo cho
-              chủ và thư xác nhận cho khách.
+              chủ website.
             </p>
           )}
           {history.items.map((item) => (
@@ -460,7 +460,7 @@ function LeadEmailPanel({ lead }: { lead: DemoRecord }) {
                 <h3>
                   {item.kind === "OWNER_NOTICE"
                     ? "Thông báo cho người phụ trách"
-                    : "Xác nhận cho khách hàng"}
+                    : "Xác nhận cho khách hàng (lịch sử cũ)"}
                 </h3>
                 <Badge
                   value={
@@ -497,7 +497,7 @@ function LeadEmailPanel({ lead }: { lead: DemoRecord }) {
                 <summary>{item.subject}</summary>
                 <pre>{item.text}</pre>
               </details>
-              {["FAILED", "PENDING", "PROCESSING"].includes(item.status) && (
+              {item.kind === "OWNER_NOTICE" && ["FAILED", "PENDING", "PROCESSING"].includes(item.status) && (
                 <button
                   className="button compact"
                   disabled={

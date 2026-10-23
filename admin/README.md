@@ -24,7 +24,7 @@ Trạng thái/ghi chú tư vấn và thông tin tài khoản có hiệu lực sa
 Bấm **Làm mới** để nhận yêu cầu mới hoặc dữ liệu sửa ở phiên khác.
 Nếu có xung đột phiên sửa, API trả 409; giữ nội dung cần thiết, rời biểu mẫu và tải lại trước khi sửa tiếp.
 Màn hình hiện lấy 500 yêu cầu tư vấn mới nhất, 100 lượt quiz và 30 bản xuất bản mới nhất.
-Hồ sơ tư vấn có lịch sử thông báo cho chủ, xác nhận cho khách và thử gửi lại khi lỗi.
+Hồ sơ tư vấn có lịch sử thông báo cho chủ website và thử gửi lại khi lỗi. Không tự gửi email cho khách.
 Chế độ preview không gửi ra ngoài; gửi thật được cấu hình qua `backend/.env`.
 Xem [luồng email tư vấn](../docs/CONSULTATION-EMAIL.md).
 Chưa có khôi phục mật khẩu qua email, gửi thư mời, MFA hay chức năng LMS cho học viên.

@@ -518,7 +518,7 @@ test("consultation mail previews have correct recipients, reply routing, escaped
   const lead = await db.lead.findUniqueOrThrow({ where: { submissionKey } });
   assert.equal(await db.lead.count({ where: { submissionKey } }), 1);
   const emails = await db.leadEmail.findMany({ where: { leadId: lead.id } });
-  assert.equal(emails.length, 2);
+  assert.equal(emails.length, 1);
   for (const email of emails) {
     assert.equal(email.status, "PREVIEW");
     assert.equal(email.sentAt, null);
@@ -527,14 +527,11 @@ test("consultation mail previews have correct recipients, reply routing, escaped
     assert.ok(!email.html.includes("<script>"));
     assert.ok(!email.html.includes("<img src=x"));
   }
-  const owner = emails.find((email) => email.kind === "OWNER_NOTICE")!,
-    customer = emails.find((email) => email.kind === "CUSTOMER_RECEIPT")!;
+  const owner = emails.find((email) => email.kind === "OWNER_NOTICE")!;
+  assert.ok(!emails.some((email) => email.kind === "CUSTOMER_RECEIPT"));
   assert.equal(owner.recipient, "owner@example.com");
   assert.equal(owner.replyTo, lead.email);
-  assert.equal(customer.recipient, lead.email);
-  assert.equal(customer.replyTo, "owner@example.com");
   assert.ok(owner.text.includes("/#/leads?id="));
-  assert.ok(!customer.text.includes("/#/leads"));
   assert.equal(
     (await request(`/admin/leads/${lead.id}/emails`, "GET", undefined, ""))
       .status,
@@ -544,7 +541,7 @@ test("consultation mail previews have correct recipients, reply routing, escaped
   assert.equal(historyResponse.status, 200);
   const history = await historyResponse.json();
   assert.equal(history.mode, "preview");
-  assert.equal(history.items.length, 2);
+  assert.equal(history.items.length, 1);
   assert.equal(
     (
       await request(
@@ -598,7 +595,7 @@ test("email configuration failure preserves consultation and outbox for later re
     const emails = await db.leadEmail.findMany({
       where: { leadId: result.id },
     });
-    assert.equal(emails.length, 2);
+    assert.equal(emails.length, 1);
     assert.ok(
       emails.every(
         (email) => email.status === "FAILED" && email.error?.includes("SMTP"),
@@ -676,13 +673,25 @@ test("SMTP retries use a database lease and never resend completed or captured m
   assert.ok(sent.sentAt);
   await deliverEmail(email.id, { db, config, sender });
   assert.equal(sends, 1);
+  const legacyReceipt = await db.leadEmail.create({
+    data: {
+      ...notificationDrafts(lead, config)[0],
+      kind: "CUSTOMER_RECEIPT",
+      recipient: lead.email,
+    },
+  });
+  await deliverEmail(legacyReceipt.id, { db, config, sender });
+  assert.equal(sends, 1, "Old customer receipts must never be sent");
+  assert.equal((await request(`/admin/leads/${lead.id}/emails/${legacyReceipt.id}/retry`, "POST", {})).status, 409);
   const captured = await db.leadEmail.findFirstOrThrow({
     where: { status: "PREVIEW" },
   });
   await deliverEmail(captured.id, { db, config, sender });
   assert.equal(sends, 1);
   const rejected = await db.leadEmail.create({
-    data: notificationDrafts(lead, config)[1],
+    data: { ...notificationDrafts(lead, config)[0], leadId: (await db.lead.create({
+      data: { fullName: "Rejected fixture", organization: "Test", email: "rejected@example.com", interests: [] },
+    })).id },
   });
   await deliverEmail(rejected.id, {
     db,
@@ -700,7 +709,7 @@ test("SMTP retries use a database lease and never resend completed or captured m
   );
 });
 
-test("consultation receipt throttling rejects repeated mail targets but allows idempotent retry", async () => {
+test("consultation throttling rejects repeated submissions but allows idempotent retry", async () => {
   const email = "mail-quota@example.com";
   let lastPayload: Record<string, unknown> = {};
   for (let i = 0; i < 3; i++) {
@@ -948,7 +957,7 @@ test("public content endpoints agree with publication and private endpoints requ
 });
 
 test(
-  "Nodemailer delivers both notifications through a loopback SMTP receiver",
+  "Nodemailer delivers only the owner notification through a loopback SMTP receiver",
   { timeout: 10000 },
   async () => {
     const connections = new Set<Socket>();
@@ -1040,7 +1049,9 @@ test(
         assert.ok(received.source.includes("Message-ID:"));
         assert.ok(received.source.includes("multipart/alternative"));
       }
-      assert.equal(messages.length, 2);
+      assert.equal(messages.length, 1);
+      assert.equal(messages[0].recipient, config.owner);
+      assert.ok(!messages.some(message => message.recipient === lead.email));
     } finally {
       sender.close();
       for (const socket of connections) socket.destroy();

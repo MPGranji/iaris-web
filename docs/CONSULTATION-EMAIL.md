@@ -2,9 +2,9 @@
 
 Không có tài khoản học viên trong luồng này. Người liên hệ chỉ cần điền form.
 
-1. Form lưu yêu cầu và hai thư thông báo vào PostgreSQL trong cùng transaction.
+1. Form lưu yêu cầu và thư thông báo cho chủ website vào PostgreSQL trong cùng transaction.
 2. Thư `OWNER_NOTICE` gửi đến `CONSULTATION_TO`; bấm Reply sẽ trả lời địa chỉ khách điền trong form.
-3. Thư `CUSTOMER_RECEIPT` gửi đến email khách; bấm Reply sẽ trả lời `MAIL_REPLY_TO`.
+3. Không gửi thư xác nhận tự động tới email khách. Lịch sử thư xác nhận cũ được giữ lại, không gửi lại.
 4. Admin xem hồ sơ, ghi chú nội bộ, trạng thái từng thư, nội dung xem trước và thử gửi lại khi lỗi.
 5. Nút **Soạn email trả lời** mở ứng dụng email của nhân sự. Thư khách trả lời về hộp thư người phụ trách,
    chưa tự đồng bộ nội dung trả lời vào admin.
@@ -44,7 +44,7 @@ Không gửi mật khẩu trong chat hoặc commit lên Git. Không dùng mật 
 npm run dev:all
 ```
 
-Gửi một form mới để kiểm tra cả hộp thư chủ và khách. Có thể cần kiểm tra mục spam.
+Gửi một form mới để kiểm tra hộp thư chủ website. Có thể cần kiểm tra mục spam.
 Thư PREVIEW cũ không tự chuyển thành thư gửi thật khi đổi mode, tránh vô tình gửi dữ liệu thử nghiệm.
 
 ## Bản Vercel chính
@@ -60,8 +60,8 @@ API có thời gian tối đa 30 giây để lưu yêu cầu và chờ SMTP tr�
 ## Xử lý lỗi và giới hạn
 
 - Yêu cầu đã lưu không mất khi SMTP lỗi. Không báo form thất bại chỉ vì thư thông báo chưa gửi được.
-- Mã gửi UUID được giữ khi thử lại cùng nội dung; không tạo trùng lead hoặc hai bộ email sau lỗi mạng.
-- Giới hạn 3 yêu cầu cho cùng email trong 15 phút để hạn chế gửi xác nhận liên tục.
+- Mã gửi UUID được giữ khi thử lại cùng nội dung; không tạo trùng lead hoặc hai thư thông báo sau lỗi mạng.
+- Giới hạn 3 yêu cầu cho cùng email trong 15 phút để hạn chế spam yêu cầu.
 - Lịch sử gửi có lease trong database, chặn hai phiên gửi lại đồng thời; thư SENT/PREVIEW không được gửi lại.
 - SMTP xác nhận tiếp nhận không đồng nghĩa thư chắc chắn vào inbox. Nếu kết nối mất ngay sau khi máy chủ nhận thư,
   cần kiểm tra hộp thư trước khi thử lại; không thể bảo đảm exactly-once qua SMTP.

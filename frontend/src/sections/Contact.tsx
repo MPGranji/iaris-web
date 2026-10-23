@@ -155,12 +155,10 @@ export function Contact({
     setOut(null);
     setSending(true);
     let stored = false;
-    let emailStatus: LeadResult["email"];
     let adminUrl: string | undefined;
     try {
       const result = await api.post<LeadResult>("/leads", payload);
       stored = result.stored;
-      emailStatus = result.email;
       adminUrl = result.adminUrl;
     } catch (err) {
       if (
@@ -194,7 +192,7 @@ export function Contact({
         </span>
         <span>
           {stored
-            ? `Cảm ơn ${name}. IARIS đã nhận yêu cầu tư vấn. ${emailStatus === "preview" ? "Đây là môi trường thử nghiệm; email được lưu để xem trước, chưa gửi ra ngoài." : emailStatus === "sent" ? "Hệ thống đã gửi email xác nhận. Bạn có thể trả lời email đó để bổ sung thông tin." : "Đội ngũ sẽ liên hệ qua email hoặc điện thoại bạn đã cung cấp. Email xác nhận đang chờ xử lý; bạn không cần gửi lại biểu mẫu."}`
+            ? `Cảm ơn ${name}. IARIS đã nhận yêu cầu tư vấn. Đội ngũ phụ trách sẽ liên hệ qua email hoặc điện thoại bạn đã cung cấp.`
             : `Cảm ơn ${name}. Biểu mẫu đang trong giai đoạn thử nghiệm nên yêu cầu chưa được gửi đi. Vui lòng liên hệ hotline hoặc email của IARIS để được tư vấn.`}
           {stored && adminUrl && /^https?:\/\//.test(adminUrl) && (
             <a
@@ -408,9 +406,8 @@ export function Contact({
           </div>
           <div className="full">
             <p className="form-delivery-note">
-              Sau khi gửi, thông tin yêu cầu sẽ được lưu trên web admin và thông
-              báo qua Gmail cho người phụ trách. Bạn cũng sẽ nhận được email xác
-              nhận tại địa chỉ đã nhập.
+              Sau khi gửi, thông tin yêu cầu sẽ được lưu trên web admin và gửi
+              thông báo tới Gmail của chủ website.
             </p>
             <a
               className="form-admin-entry"
