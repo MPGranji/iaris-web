@@ -310,10 +310,6 @@ textarea{min-height:96px;resize:vertical}
 .checks input{width:auto;accent-color:var(--brand)}
 .note{font-size:.8rem;color:var(--faint)}
 .ok{display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:12px;background:var(--signal-soft);color:var(--fg);border:1px solid color-mix(in srgb,var(--signal) 40%,transparent);font-size:.9rem}
-.form-admin-link{display:block;width:fit-content;margin-top:12px;color:var(--fg);font-weight:600;text-decoration:underline;text-underline-offset:4px}
-.form-admin-link:hover{color:var(--signal)}
-.form-admin-entry{color:var(--fg);font-size:.88rem;font-weight:600;text-decoration:underline;text-underline-offset:4px}
-.form-admin-entry:hover{color:var(--signal)}
 .form-request-code{display:block;margin-top:8px;overflow-wrap:anywhere}
 .form-delivery-note{margin:0 0 12px;font-size:.84rem;line-height:1.65;color:var(--muted)}
 

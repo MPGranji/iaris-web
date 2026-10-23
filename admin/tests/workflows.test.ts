@@ -482,6 +482,7 @@ test("public consultation keeps fields and the same submission key after a faile
   await act(async () => {
     root.render(createElement(Contact as any, { tiers: [], prefill: null }));
   });
+  assert.equal(document.querySelectorAll("#leadForm a").length, 0);
   await fill("#f-name", "Khách thử nghiệm");
   await fill("#f-org", "Doanh nghiệp thử");
   await fill("#f-email", "customer@example.com");
@@ -499,8 +500,8 @@ test("public consultation keeps fields and the same submission key after a faile
   assert.equal(element<HTMLInputElement>("#f-name").value, "");
   assert.ok(document.body.textContent?.includes("Đội ngũ phụ trách sẽ liên hệ"));
   assert.ok(element(".form-request-code").textContent?.includes("YC-20261024-153045-KH-A1B2C3D4E5F6"));
-  assert.equal(element<HTMLAnchorElement>(".form-admin-link").href,
-    "https://admin.example.com/#/leads?id=lead-from-form");
+  assert.equal(document.querySelectorAll("#leadForm a").length, 0);
+  assert.ok(document.body.textContent?.includes("thông báo tới Gmail của chủ website"));
 });
 
 test("public quiz reports persistence failure and uses server result after retry", async () => {

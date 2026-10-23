@@ -16,9 +16,6 @@ import {
 import { api, ApiRequestError } from "../api/client";
 import { useSiteSection } from "../hooks/useSiteSection";
 
-const ADMIN_APP_URL =
-  import.meta.env.VITE_ADMIN_APP_URL || "http://127.0.0.1:5176";
-
 export interface ContactPrefill {
   message: string;
   eventSlug: string;
@@ -156,12 +153,10 @@ export function Contact({
     setSending(true);
     let stored = false;
     let requestCode: string | undefined;
-    let adminUrl: string | undefined;
     try {
       const result = await api.post<LeadResult>("/leads", payload);
       stored = result.stored;
       requestCode = result.requestCode;
-      adminUrl = result.adminUrl;
     } catch (err) {
       if (
         err instanceof ApiRequestError &&
@@ -198,16 +193,6 @@ export function Contact({
             : `Cảm ơn ${name}. Biểu mẫu đang trong giai đoạn thử nghiệm nên yêu cầu chưa được gửi đi. Vui lòng liên hệ hotline hoặc email của IARIS để được tư vấn.`}
           {stored && requestCode && (
             <span className="form-request-code">Mã yêu cầu: <strong>{requestCode}</strong></span>
-          )}
-          {stored && adminUrl && /^https?:\/\//.test(adminUrl) && (
-            <a
-              className="form-admin-link"
-              href={adminUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Mở admin để kiểm tra yêu cầu ↗
-            </a>
           )}
         </span>
       </div>,
@@ -414,14 +399,6 @@ export function Contact({
               Sau khi gửi, thông tin yêu cầu sẽ được lưu trên web admin và gửi
               thông báo tới Gmail của chủ website.
             </p>
-            <a
-              className="form-admin-entry"
-              href={ADMIN_APP_URL}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Mở web admin demo ↗
-            </a>
           </div>
         </form>
       </div>
