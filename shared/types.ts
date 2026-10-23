@@ -37,7 +37,7 @@ export interface SectorTier {
   programs: SectorProgram[];
 }
 
-export type MediaGroupCode = 'M1' | 'M2' | 'M3';
+export type MediaGroupCode = "M1" | "M2" | "M3";
 
 export interface MediaService {
   group: MediaGroupCode;
@@ -49,9 +49,9 @@ export interface MediaService {
 }
 
 /** Tab filter in the Events section */
-export type EventStatusCode = 'up' | 'web' | 'past';
+export type EventStatusCode = "up" | "web" | "past";
 /** Colour of the first tag pill */
-export type EventKindCode = 'ev' | 'com' | 'web' | 'past';
+export type EventKindCode = "ev" | "com" | "web" | "past";
 
 export interface SiteEvent {
   slug: string;
@@ -82,6 +82,7 @@ export interface QuizQuestion {
 }
 
 export interface SiteContent {
+  settings?: Record<string, Record<string, string>>;
   laws: Law[];
   courses: Course[];
   tiers: SectorTier[];
@@ -92,21 +93,27 @@ export interface SiteContent {
   /** Quiz of the B6 course */
   quiz: QuizQuestion[];
   /** "database" when served from PostgreSQL, "static" when served from the built-in content */
-  source: 'database' | 'static';
+  source: "database" | "static";
 }
 
 export const INTEREST_OPTIONS = [
-  { code: 'FOUNDATION', value: 'Khóa nền tảng', label: 'Khóa nền tảng' },
-  { code: 'SECTOR_PROGRAM', value: 'Chương trình ngành', label: 'Chương trình ngành' },
-  { code: 'INHOUSE', value: 'In-house', label: 'In-house / diễn tập' },
-  { code: 'ELEARNING', value: 'E-learning', label: 'E-learning' },
-  { code: 'MEDIA', value: 'Media', label: 'IARIS Media' },
-  { code: 'EVENT_SPONSOR', value: 'Sự kiện', label: 'Tài trợ sự kiện' },
+  { code: "FOUNDATION", value: "Khóa nền tảng", label: "Khóa nền tảng" },
+  {
+    code: "SECTOR_PROGRAM",
+    value: "Chương trình ngành",
+    label: "Chương trình ngành",
+  },
+  { code: "INHOUSE", value: "In-house", label: "In-house / diễn tập" },
+  { code: "ELEARNING", value: "E-learning", label: "E-learning" },
+  { code: "MEDIA", value: "Media", label: "IARIS Media" },
+  { code: "EVENT_SPONSOR", value: "Sự kiện", label: "Tài trợ sự kiện" },
 ] as const;
 
-export type InterestCode = (typeof INTEREST_OPTIONS)[number]['code'];
+export type InterestCode = (typeof INTEREST_OPTIONS)[number]["code"];
 
 export interface LeadInput {
+  /** Reused on retry to avoid duplicate requests and automatic mail. */
+  submissionKey?: string;
   fullName: string;
   jobTitle?: string;
   organization: string;
@@ -126,6 +133,30 @@ export interface LeadResult {
   id: string | null;
   /** false when the API runs without a database (request not stored) */
   stored: boolean;
+  email?: "preview" | "sent" | "pending";
+  /** Link to inspect a saved request, only exposed in the opted-in public demo. */
+  adminUrl?: string;
+}
+
+export interface LeadEmailSummary {
+  id: string;
+  kind: "OWNER_NOTICE" | "CUSTOMER_RECEIPT";
+  status: "PENDING" | "PROCESSING" | "SENT" | "FAILED" | "PREVIEW";
+  mode: string;
+  recipient: string;
+  replyTo: string;
+  subject: string;
+  text: string;
+  attempts: number;
+  error: string | null;
+  sentAt: string | null;
+  createdAt: string;
+}
+export interface LeadMailHistory {
+  mode: "preview" | "smtp";
+  configured: boolean;
+  configurationError: string | null;
+  items: LeadEmailSummary[];
 }
 
 export interface QuizAttemptInput {

@@ -5,7 +5,8 @@
   "description": "IARIS Cyber & Data – website (React + Vite frontend, Express + Prisma backend) deployable on Vercel",
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "admin"
   ],
   "engines": {
     "node": ">=20.19"
@@ -14,13 +15,29 @@
     "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "dev:web": "npm run dev -w frontend",
     "dev:api": "npm run dev -w backend",
+    "dev:admin": "concurrently -n api,admin -c cyan,blue \"npm run dev -w backend\" \"npm run dev -w admin\"",
+    "dev:admin:web": "npm run dev -w admin",
+    "build:admin": "npm run build -w admin",
+    "test:admin": "tsx --test admin/tests/demo.test.ts backend/test/admin-demo.test.ts",
+    "test:integration": "tsx --test backend/test/integration.test.ts",
+    "test:frontend": "tsx --test frontend/test/settings.test.ts",
+    "test:ui": "tsx --test admin/tests/workflows.test.ts",
     "build": "npm run db:generate && npm run build -w frontend",
-    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend && npm run typecheck -w admin",
     "db:generate": "npm run db:generate -w backend",
     "db:migrate": "npm run db:migrate -w backend",
     "db:deploy": "npm run db:deploy -w backend",
     "db:seed": "npm run db:seed -w backend",
-    "db:studio": "npm run db:studio -w backend"
+    "db:studio": "npm run db:studio -w backend",
+    "local:db": "node scripts/dev-db.mjs",
+    "local:db:stop": "node scripts/dev-db.mjs stop",
+    "local:setup": "npm run local:db && npm run db:generate && npm run db:deploy && npm run db:seed",
+    "dev:all": "concurrently -n api,web,admin -c cyan,magenta,blue \"npm run dev -w backend\" \"npm run dev -w frontend\" \"npm run dev -w admin\""
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.0"
+    }
   },
   "devDependencies": {
     "concurrently": "^9.2.0",

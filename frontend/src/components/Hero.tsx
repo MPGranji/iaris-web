@@ -1,8 +1,11 @@
-import type { Law } from '../../../shared/types';
-import { formatDateVN } from '../lib/format';
-import { NetworkCanvas } from './NetworkCanvas';
+import type { Law } from "../../../shared/types";
+import { formatDateVN } from "../lib/format";
+import { NetworkCanvas } from "./NetworkCanvas";
+import { useSiteSection } from "../hooks/useSiteSection";
 
 export function Hero({ laws }: { laws: Law[] }) {
+  const section = useSiteSection("hero");
+  const [firstLine, ...rest] = section.title.split("\n");
   return (
     <header className="hero" id="top">
       <NetworkCanvas />
@@ -10,21 +13,21 @@ export function Hero({ laws }: { laws: Law[] }) {
         <div>
           <span className="status mono reveal">
             <span className="dot" />
-            Đào tạo &amp; truyền thông an ninh mạng theo ngành
+            {section.subtitle}
           </span>
           <h1 className="reveal d1">
-            An toàn dữ liệu.
-            <br />
-            <em>Vững vàng</em> <span className="cu">tăng trưởng.</span>
+            {firstLine}
+            {rest.length > 0 && (
+              <>
+                <br />
+                <em>{rest.join(" ")}</em>
+              </>
+            )}
           </h1>
-          <p className="lead reveal d2">
-            IARIS Cyber &amp; Data đào tạo an ninh mạng và bảo vệ dữ liệu cho lãnh đạo và đội ngũ doanh nghiệp Việt Nam,
-            thiết kế riêng cho từng ngành. Rủi ro mạng nay là rủi ro kinh doanh, và trách nhiệm cuối cùng thuộc về ban
-            lãnh đạo.
-          </p>
+          <p className="lead reveal d2">{section.body}</p>
           <div className="cta reveal d3">
             <a className="btn btn-primary" href="#courses">
-              Xem chương trình đào tạo
+              {section.buttonLabel}
             </a>
             <a className="btn btn-ghost" href="#events">
               Lịch sự kiện &amp; webinar
@@ -34,14 +37,16 @@ export function Hero({ laws }: { laws: Law[] }) {
         <aside className="laws reveal d2" aria-label="Các đạo luật mới">
           <header>
             <span className="mono">{laws.length} đạo luật · 12 tháng</span>
-            <span className="mono" style={{ color: 'var(--signal)' }}>
+            <span className="mono" style={{ color: "var(--signal)" }}>
               ● Đang hiệu lực
             </span>
           </header>
           <ol>
             {laws.map((l) => (
               <li key={l.name}>
-                <time dateTime={l.effectiveDate}>{formatDateVN(l.effectiveDate)}</time>
+                <time dateTime={l.effectiveDate}>
+                  {formatDateVN(l.effectiveDate)}
+                </time>
                 <div>
                   <b>{l.name}</b>
                   <span>{l.detail}</span>
@@ -49,7 +54,9 @@ export function Hero({ laws }: { laws: Law[] }) {
               </li>
             ))}
           </ol>
-          <footer>Doanh nghiệp của bạn đã sẵn sàng với cả bốn?</footer>
+          <footer>
+            Doanh nghiệp của bạn đã sẵn sàng với các quy định mới?
+          </footer>
         </aside>
       </div>
     </header>

@@ -193,9 +193,75 @@ model QuizAttempt {
   answers   Int[] // chỉ số đáp án đã chọn theo thứ tự câu hỏi
   score     Int
   total     Int
+  questions Json? // Published question snapshot, so later edits do not change recorded results.
   createdAt DateTime @default(now())
 
   @@index([courseId, createdAt])
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+  ADVISOR
+}
+
+model AdminUser {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  role         AdminRole      @default(EDITOR)
+  active       Boolean        @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String    @id // SHA256 of the random cookie token; never store the raw token.
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model SiteSection {
+  id        String   @id
+  fields    Json
+  updatedAt DateTime @updatedAt
+}
+
+model ContentState {
+  id        String   @id @default("main")
+  revision  Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model Publication {
+  id          String   @id @default(cuid())
+  label       String
+  revision    Int
+  content     Json // Public DTO only; never accounts, sessions, leads, or internal notes.
+  editorData  Json // Content-only snapshot for admin preview.
+  recordCount Int
+  actorId     String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  collection String
+  recordId   String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ───────────────────────────── Sales ─────────────────────────────
@@ -220,7 +286,48 @@ model Lead {
   userAgent       String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  emails          LeadEmail[]
+  submissionKey   String?        @unique
+  submissionHash  String?
 
   @@index([status, createdAt])
   @@index([email])
+}
+
+enum LeadEmailKind {
+  OWNER_NOTICE
+  CUSTOMER_RECEIPT
+}
+
+enum LeadEmailStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  PREVIEW
+}
+
+model LeadEmail {
+  id           String          @id @default(cuid())
+  leadId       String
+  lead         Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind         LeadEmailKind
+  status       LeadEmailStatus @default(PENDING)
+  mode         String          // preview or smtp, fixed at creation so preview mail is never sent by accident.
+  recipient    String
+  sender       String
+  replyTo      String
+  subject      String
+  text         String
+  html         String
+  attempts     Int             @default(0)
+  error        String?
+  messageId    String?
+  lockedAt     DateTime?
+  sentAt       DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([leadId, kind])
+  @@index([status, createdAt])
 }

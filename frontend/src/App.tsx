@@ -1,27 +1,32 @@
-import { useCallback, useState } from 'react';
-import type { SiteEvent } from '../../shared/types';
-import { useSiteContent } from './hooks/useSiteContent';
-import { Nav } from './components/Nav';
-import { Hero } from './components/Hero';
-import { StatsStrip } from './components/StatsStrip';
-import { Footer } from './components/Footer';
-import { About } from './sections/About';
-import { Courses } from './sections/Courses';
-import { Media } from './sections/Media';
-import { Elearning } from './sections/Elearning';
-import { Events } from './sections/Events';
-import { Contact, type ContactPrefill } from './sections/Contact';
+import { useCallback, useState } from "react";
+import type { SiteEvent } from "../../shared/types";
+import { useSiteContent } from "./hooks/useSiteContent";
+import { Nav } from "./components/Nav";
+import { Hero } from "./components/Hero";
+import { StatsStrip } from "./components/StatsStrip";
+import { Footer } from "./components/Footer";
+import { About } from "./sections/About";
+import { Courses } from "./sections/Courses";
+import { Media } from "./sections/Media";
+import { Elearning } from "./sections/Elearning";
+import { Events } from "./sections/Events";
+import { Contact, type ContactPrefill } from "./sections/Contact";
+import { SiteSettingsContext } from "./hooks/useSiteSection";
 
 export default function App() {
   const content = useSiteContent();
   const [prefill, setPrefill] = useState<ContactPrefill | null>(null);
 
   const registerForEvent = useCallback((e: SiteEvent) => {
-    setPrefill({ message: `Đăng ký: ${e.title}`, eventSlug: e.slug, nonce: Date.now() });
+    setPrefill({
+      message: `Đăng ký: ${e.title}`,
+      eventSlug: e.slug,
+      nonce: Date.now(),
+    });
   }, []);
 
   return (
-    <>
+    <SiteSettingsContext.Provider value={content.settings ?? {}}>
       <Nav />
       <Hero laws={content.laws} />
       <StatsStrip content={content} />
@@ -29,11 +34,15 @@ export default function App() {
         <About />
         <Courses courses={content.courses} tiers={content.tiers} />
         <Media media={content.media} />
-        <Elearning lessons={content.lessons} quiz={content.quiz} persist={content.source === 'database'} />
+        <Elearning
+          lessons={content.lessons}
+          quiz={content.quiz}
+          persist={content.source === "database"}
+        />
         <Events events={content.events} onRegister={registerForEvent} />
-        <Contact tiers={content.tiers} prefill={prefill} persist={content.source === 'database'} />
+        <Contact tiers={content.tiers} prefill={prefill} />
       </main>
       <Footer />
-    </>
+    </SiteSettingsContext.Provider>
   );
 }
