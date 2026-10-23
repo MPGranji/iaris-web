@@ -302,7 +302,7 @@ export function App() {
               <div className="demo-login-hint">
                 <strong>Tài khoản dùng thử</strong>
                 <p>Tài khoản: <code>admin</code> · Mật khẩu: <code>admin</code></p>
-                <small>Dùng để kiểm tra nội dung và form tư vấn của bản demo.</small>
+                <small>Bạn tự nhập tài khoản và mật khẩu ở trên để đăng nhập bản demo.</small>
               </div>
             ) : <small>Tài khoản được cấp bởi quản trị viên.</small>}
           </section>

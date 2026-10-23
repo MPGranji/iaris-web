@@ -407,6 +407,11 @@ export function Contact({
             </button>
           </div>
           <div className="full">
+            <p className="form-delivery-note">
+              Sau khi gửi, thông tin yêu cầu sẽ được lưu trên web admin và thông
+              báo qua Gmail cho người phụ trách. Bạn cũng sẽ nhận được email xác
+              nhận tại địa chỉ đã nhập.
+            </p>
             <a
               className="form-admin-entry"
               href={ADMIN_APP_URL}
