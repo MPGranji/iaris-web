@@ -74,7 +74,7 @@ async function fakeFetch(input: string | URL | Request, init?: RequestInit) {
       failLeadResponse = false;
       return json({ error: "Mạng bị gián đoạn. Vui lòng thử lại." }, 503);
     }
-    return json({ stored: true, id: "lead-from-form", email: "preview",
+    return json({ stored: true, id: "lead-from-form", requestCode: "YC-20261024-153045-KH-A1B2C3D4E5F6", email: "preview",
       ...(demoMode ? { adminUrl: "https://admin.example.com/#/leads?id=lead-from-form" } : {}),
     }, 201);
   }
@@ -498,6 +498,7 @@ test("public consultation keeps fields and the same submission key after a faile
   assert.ok(firstKey);
   assert.equal(element<HTMLInputElement>("#f-name").value, "");
   assert.ok(document.body.textContent?.includes("Đội ngũ phụ trách sẽ liên hệ"));
+  assert.ok(element(".form-request-code").textContent?.includes("YC-20261024-153045-KH-A1B2C3D4E5F6"));
   assert.equal(element<HTMLAnchorElement>(".form-admin-link").href,
     "https://admin.example.com/#/leads?id=lead-from-form");
 });

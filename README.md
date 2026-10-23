@@ -15,6 +15,11 @@ Database Neon Free **iaris-main-db** ở Singapore tách biệt database sandbox
 
 - Admin quản lý nội dung bản nháp, xuất bản website, tài khoản và quyền hạn.
 - Form tư vấn lưu vào database; thông báo gửi tới email chủ website và có lịch sử gửi; không tự gửi email cho khách.
+- Mã yêu cầu mới có dạng `YC-20261024-153045-KH.EL-A1B2C3D4E5F6`: ngày, giờ Việt Nam,
+  nhóm quan tâm và phần ngẫu nhiên để phân biệt các lượt gửi cùng giây.
+  KH: khóa nền tảng; NG: chương trình ngành; DN: in-house; EL: e-learning;
+  TT: truyền thông; SK: tài trợ sự kiện; CH: chưa chọn. Chọn nhiều mục sẽ ghép mã bằng dấu chấm.
+  Mã giữ nguyên khi thử gửi lại; hồ sơ cũ giữ ID và liên kết, có mã hiển thị từ thời gian và nhóm quan tâm cũ.
 - Chuông admin kiểm tra yêu cầu mới mỗi 10 giây khi tab đang hiển thị và khi quay lại tab.
 - Bản demo bật DEMO_ADMIN_LOGIN=true: đăng nhập **admin / admin**, có gợi ý ở màn hình đăng nhập.
   Website có link mở admin ngay dưới nút gửi form; sau khi gửi thành công còn có link mở đúng hồ sơ.

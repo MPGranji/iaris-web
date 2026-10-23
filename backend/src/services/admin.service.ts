@@ -14,6 +14,7 @@ import {
   validateRecord,
 } from "../../../shared/admin-schema";
 import { INTEREST_OPTIONS, type SiteContent } from "../../../shared/types";
+import { leadReference } from "../../../shared/lead-reference";
 import { HttpError } from "../lib/http-error";
 import { database, hashPassword } from "./auth.service";
 import { toSiteContent } from "../../../shared/site-settings";
@@ -141,6 +142,7 @@ export async function loadWorkspace(
     quiz: quiz.map((q) => ({ ...mapRecord(q), courseCode: q.course.code })),
     leads: leads.map((l) => ({
       ...mapRecord(l),
+      requestCode: leadReference(l),
       note: l.note ?? "",
       eventTitle: l.event?.title ?? "",
       interests: l.interests.map(

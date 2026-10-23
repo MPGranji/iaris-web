@@ -320,10 +320,12 @@ test("website leads arrive in admin, status and notes persist, publication exclu
   assert.equal(response.status, 201);
   const lead = (await response.json()) as { id: string; stored: boolean };
   assert.equal(lead.stored, true);
+  assert.match(lead.id, /^YC-\d{8}-\d{6}-KH-[A-F0-9]{12}$/);
   const row = (await workspace()).workspace.data.leads.find(
     (r) => r.id === lead.id,
   )!;
   assert.ok(row);
+  assert.equal(row.requestCode, lead.id);
   await save("leads", {
     ...row,
     status: "CONTACTED",
@@ -514,6 +516,7 @@ test("consultation mail previews have correct recipients, reply routing, escaped
     responses.map((response) => response.json()),
   );
   assert.equal(results[0].id, results[1].id);
+  assert.equal(results[0].requestCode, results[0].id);
   assert.equal(results[0].email, "preview");
   const lead = await db.lead.findUniqueOrThrow({ where: { submissionKey } });
   assert.equal(await db.lead.count({ where: { submissionKey } }), 1);
@@ -531,6 +534,8 @@ test("consultation mail previews have correct recipients, reply routing, escaped
   assert.ok(!emails.some((email) => email.kind === "CUSTOMER_RECEIPT"));
   assert.equal(owner.recipient, "owner@example.com");
   assert.equal(owner.replyTo, lead.email);
+  assert.ok(owner.subject.includes(results[0].requestCode));
+  assert.ok(owner.text.includes(`Mã yêu cầu: ${results[0].requestCode}`));
   assert.ok(owner.text.includes("/#/leads?id="));
   assert.equal(
     (await request(`/admin/leads/${lead.id}/emails`, "GET", undefined, ""))

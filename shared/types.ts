@@ -131,6 +131,8 @@ export interface LeadInput {
 
 export interface LeadResult {
   id: string | null;
+  /** Human-readable reference using Vietnam submission time and interest codes. */
+  requestCode?: string;
   /** false when the API runs without a database (request not stored) */
   stored: boolean;
   /** Delivery status of the notification to the website owner. */

@@ -2,6 +2,21 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createDemoWorkspace } from "../../shared/admin-demo";
 import { staticContent } from "../../shared/content";
+import { createLeadReference, leadReference } from "../../shared/lead-reference";
+
+test("consultation references use Vietnam time, canonical interests and stable legacy links", () => {
+  const date = new Date("2026-10-23T17:00:02Z");
+  assert.equal(createLeadReference(date, ["ELEARNING", "FOUNDATION", "FOUNDATION"], "ab12"),
+    "YC-20261024-000002-KH.EL-AB12");
+  assert.equal(createLeadReference(date, [], "ab12"), "YC-20261024-000002-CH-AB12");
+  assert.equal(createLeadReference(date, ["SECTOR_PROGRAM", "INHOUSE", "MEDIA", "EVENT_SPONSOR"], "ab12"),
+    "YC-20261024-000002-NG.DN.TT.SK-AB12");
+  assert.equal(leadReference({ id: "old-record-1234567890", createdAt: date.toISOString(), interests: ["Khóa nền tảng", "E-learning"] }),
+    "YC-20261024-000002-KH.EL-1234567890");
+  assert.equal(leadReference({ id: "YC-20261024-000002-CH-AB12", createdAt: "invalid", interests: ["MEDIA"] }),
+    "YC-20261024-000002-CH-AB12");
+  assert.equal(leadReference({ id: "legacy", createdAt: "invalid" }), "legacy");
+});
 import {
   newRecord,
   matchesSearch,

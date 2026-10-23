@@ -155,10 +155,12 @@ export function Contact({
     setOut(null);
     setSending(true);
     let stored = false;
+    let requestCode: string | undefined;
     let adminUrl: string | undefined;
     try {
       const result = await api.post<LeadResult>("/leads", payload);
       stored = result.stored;
+      requestCode = result.requestCode;
       adminUrl = result.adminUrl;
     } catch (err) {
       if (
@@ -194,6 +196,9 @@ export function Contact({
           {stored
             ? `Cảm ơn ${name}. IARIS đã nhận yêu cầu tư vấn. Đội ngũ phụ trách sẽ liên hệ qua email hoặc điện thoại bạn đã cung cấp.`
             : `Cảm ơn ${name}. Biểu mẫu đang trong giai đoạn thử nghiệm nên yêu cầu chưa được gửi đi. Vui lòng liên hệ hotline hoặc email của IARIS để được tư vấn.`}
+          {stored && requestCode && (
+            <span className="form-request-code">Mã yêu cầu: <strong>{requestCode}</strong></span>
+          )}
           {stored && adminUrl && /^https?:\/\//.test(adminUrl) && (
             <a
               className="form-admin-link"

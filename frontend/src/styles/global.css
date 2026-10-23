@@ -314,6 +314,7 @@ textarea{min-height:96px;resize:vertical}
 .form-admin-link:hover{color:var(--signal)}
 .form-admin-entry{color:var(--fg);font-size:.88rem;font-weight:600;text-decoration:underline;text-underline-offset:4px}
 .form-admin-entry:hover{color:var(--signal)}
+.form-request-code{display:block;margin-top:8px;overflow-wrap:anywhere}
 .form-delivery-note{margin:0 0 12px;font-size:.84rem;line-height:1.65;color:var(--muted)}
 
 footer.site{border-top:1px solid var(--line);padding-block:40px;background:var(--bg2)}

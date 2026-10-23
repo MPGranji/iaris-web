@@ -5,6 +5,7 @@ import { env } from "../config/env";
 import { database } from "./auth.service";
 import { INTEREST_OPTIONS, type LeadMailHistory } from "../../../shared/types";
 import { HttpError } from "../lib/http-error";
+import { leadReference } from "../../../shared/lead-reference";
 
 export interface MailConfiguration {
   mode: "preview" | "smtp";
@@ -80,6 +81,7 @@ export function notificationDrafts(
   lead: Lead,
   config = mailConfiguration(),
 ): Prisma.LeadEmailCreateManyInput[] {
+  const reference = leadReference(lead);
   const interests =
     lead.interests
       .map(
@@ -88,7 +90,7 @@ export function notificationDrafts(
           code,
       )
       .join(", ") || "Chưa chọn";
-  const summary = `Mã yêu cầu: ${lead.id}\nHọ và tên: ${lead.fullName}\nDoanh nghiệp: ${lead.organization}\nChức vụ: ${lead.jobTitle || "Chưa cung cấp"}\nEmail: ${lead.email}\nĐiện thoại: ${lead.phone || "Chưa cung cấp"}\nNgành: ${lead.sectorLabel || "Chưa chọn"}\nQuan tâm: ${interests}\n\nNội dung khách gửi:\n${lead.message || "Chưa để lại lời nhắn."}`;
+  const summary = `Mã yêu cầu: ${reference}\nHọ và tên: ${lead.fullName}\nDoanh nghiệp: ${lead.organization}\nChức vụ: ${lead.jobTitle || "Chưa cung cấp"}\nEmail: ${lead.email}\nĐiện thoại: ${lead.phone || "Chưa cung cấp"}\nNgành: ${lead.sectorLabel || "Chưa chọn"}\nQuan tâm: ${interests}\n\nNội dung khách gửi:\n${lead.message || "Chưa để lại lời nhắn."}`;
   const ownerBody = `Có yêu cầu tư vấn mới từ website IARIS.\n\n${summary}\n\nMở hồ sơ trong admin:\n${config.adminUrl}/#/leads?id=${encodeURIComponent(lead.id)}\n\nBấm Trả lời email này để liên hệ trực tiếp với khách hàng.`;
   return [
     {
@@ -98,7 +100,7 @@ export function notificationDrafts(
       recipient: config.owner,
       sender: config.sender,
       replyTo: lead.email,
-      subject: `[IARIS] Yêu cầu tư vấn mới · ${lead.id}`,
+      subject: `[IARIS] Yêu cầu tư vấn mới · ${reference}`,
       text: ownerBody,
       html: htmlMessage("Yêu cầu tư vấn mới", ownerBody),
     },

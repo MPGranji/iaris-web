@@ -13,6 +13,7 @@ import { useAdmin } from "../context";
 import { Pagination } from "./Content";
 import { formatDate, matchesSearch } from "../schema";
 import type { LeadMailHistory } from "../../../shared/types";
+import { leadReference } from "../../../shared/lead-reference";
 
 export function LeadsPage({ recordId }: { recordId?: string }) {
   const {
@@ -113,7 +114,7 @@ export function LeadsPage({ recordId }: { recordId?: string }) {
               setPage(1);
             }}
             label="Tìm yêu cầu tư vấn"
-            placeholder="Tìm theo tên, email, doanh nghiệp…"
+            placeholder="Tìm theo mã yêu cầu, tên, email, doanh nghiệp…"
           />
         </div>
         {!shown.length ? (
@@ -158,6 +159,7 @@ export function LeadsPage({ recordId }: { recordId?: string }) {
                         {String(r.fullName)}
                       </button>
                       <small className="cell-subtitle">{String(r.email)}</small>
+                      <small className="cell-subtitle">{leadReference(r)}</small>
                     </td>
                     <td>
                       <span className="cell-summary">
@@ -250,7 +252,7 @@ function LeadDetail({ lead }: { lead: DemoRecord }) {
             <ArrowLeft size={16} />
             Yêu cầu tư vấn
           </button>
-          <span className="eyebrow">{lead.id}</span>
+          <span className="eyebrow">{leadReference(lead)}</span>
           <h1>{String(lead.fullName)}</h1>
           <p>{String(lead.organization)}</p>
         </div>
@@ -516,7 +518,7 @@ function LeadEmailPanel({ lead }: { lead: DemoRecord }) {
       )}
       <a
         className="button"
-        href={`mailto:${encodeURIComponent(String(lead.email))}?subject=${encodeURIComponent(`[IARIS ${lead.id}] Phản hồi yêu cầu tư vấn`)}`}
+        href={`mailto:${encodeURIComponent(String(lead.email))}?subject=${encodeURIComponent(`[IARIS ${leadReference(lead)}] Phản hồi yêu cầu tư vấn`)}`}
       >
         Soạn email trả lời
         <ArrowUpRight size={16} />

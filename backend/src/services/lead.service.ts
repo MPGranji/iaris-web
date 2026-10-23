@@ -1,5 +1,6 @@
 import { Prisma, type Interest, type LeadStatus } from "@prisma/client";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import { createLeadReference, leadReference } from "../../../shared/lead-reference";
 import { env } from "../config/env";
 import { prisma } from "../lib/prisma";
 import { HttpError } from "../lib/http-error";
@@ -80,8 +81,11 @@ export async function createLead(
             429,
             "Email này đã gửi nhiều yêu cầu gần đây. Vui lòng chờ 15 phút hoặc liên hệ trực tiếp.",
           );
+        const createdAt = new Date();
         const created = await tx.lead.create({
           data: {
+            id: createLeadReference(createdAt, input.interests, randomBytes(6).toString("hex")),
+            createdAt,
             submissionKey: input.submissionKey,
             submissionHash: input.submissionKey ? fingerprint : undefined,
             fullName: input.fullName,
@@ -116,6 +120,7 @@ export async function createLead(
   }
   return {
     id: lead.id,
+    requestCode: leadReference(lead),
     stored: true,
     ...(env.demoAdminLogin ? {
       adminUrl: `${env.adminAppUrl.replace(/\/$/, "")}/#/leads?id=${encodeURIComponent(lead.id)}`,
