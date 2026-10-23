@@ -17,7 +17,7 @@ Database Neon Free **iaris-main-db** ở Singapore tách biệt database sandbox
 - Form tư vấn lưu vào database; thông báo chủ và xác nhận khách được gửi qua email, có lịch sử gửi.
 - Chuông admin kiểm tra yêu cầu mới mỗi 10 giây khi tab đang hiển thị và khi quay lại tab.
 - Bản demo bật DEMO_ADMIN_LOGIN=true: đăng nhập **admin / admin**, có gợi ý ở màn hình đăng nhập.
-  Sau khi gửi form thành công, website hiển thị link mở đúng hồ sơ trong admin.
+  Website có link mở admin ngay dưới nút gửi form; sau khi gửi thành công còn có link mở đúng hồ sơ.
 - PUBLIC_SITE_URL=https://iaris-web.vercel.app và ADMIN_APP_URL=https://iaris-admin.vercel.app
   xác định liên kết giữa hai ứng dụng và trong email.
 
@@ -25,6 +25,7 @@ Email gửi/nhận hiện dùng granjihas@gmail.com; SMTP password lưu dưới 
 Xem [cấu hình email](docs/CONSULTATION-EMAIL.md), [admin](docs/ADMIN.md),
 [thiết kế database được phát triển trong sandbox](docs/SANDBOX-DATABASE.md).
 Tắt DEMO_ADMIN_LOGIN để tắt tài khoản công khai và link admin sau khi gửi form.
+Link cố định dưới nút gửi form lấy từ VITE_ADMIN_APP_URL tại thời điểm build website.
 
 ## Chạy trên máy
 

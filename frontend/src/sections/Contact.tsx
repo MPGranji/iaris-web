@@ -16,6 +16,9 @@ import {
 import { api, ApiRequestError } from "../api/client";
 import { useSiteSection } from "../hooks/useSiteSection";
 
+const ADMIN_APP_URL =
+  import.meta.env.VITE_ADMIN_APP_URL || "http://127.0.0.1:5176";
+
 export interface ContactPrefill {
   message: string;
   eventSlug: string;
@@ -402,6 +405,16 @@ export function Contact({
             >
               {sending ? "Đang gửi…" : "Gửi yêu cầu tư vấn"}
             </button>
+          </div>
+          <div className="full">
+            <a
+              className="form-admin-entry"
+              href={ADMIN_APP_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Mở web admin demo ↗
+            </a>
           </div>
         </form>
       </div>
